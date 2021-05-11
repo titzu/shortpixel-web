@@ -24,17 +24,34 @@ class ShortPixelWeb
     private $settingsHandler;
     private $xtpl;
     private $basePath;
+    private $settings;
 
-    function __construct() {
+    function __construct($settings=false) {
         $this->xtpl = new XTemplate('main.html', __DIR__ . '/ShortPixelWeb/tpl');
-        $this->settingsHandler = new \ShortPixel\Settings(dirname(__DIR__). '/shortpixel.ini');
-        $this->basePath = str_replace(DIRECTORY_SEPARATOR, '/', dirname(dirname(__DIR__))); // get that damn separator straight on Windows too :))
+        if(!$settings) {
+            $this->settingsHandler = new \ShortPixel\Settings(dirname(__DIR__). '/shortpixel.ini');
+            $this->basePath = str_replace(DIRECTORY_SEPARATOR, '/', dirname(dirname(__DIR__))); // get that damn separator straight on Windows too :))
+        } else {
+            $this->settings = $settings;
+        }
+
     }
 
     function bootstrap() {
         date_default_timezone_set("UTC");
         $settings = array();
         $apiKey = false;
+        //die(phpinfo());
+
+        $this->handleRequest();
+    }
+
+    function bootstrapSP() {
+        date_default_timezone_set("UTC");
+        $settings = array(
+            "lossy"=>1
+        );
+        $apiKey = 'r4QknL9jd8pSPxnzuJ3X';
         //die(phpinfo());
 
         $this->handleRequest();

@@ -17,18 +17,6 @@
     "email": "support@shortpixel.com"
   },
 
-  "scripts": {
-    "sp-update": [
-      "bash echo \"aaaaaa\""
-    ],
-    "post-install-cmd": [
-      "@sp-update"
-    ],
-    "post-update-cmd": [
-      "@sp-update"
-    ]
-  },
-
   "authors": [{
     "name": "Simon Duduica",
     "email": "simon@shortpixel.com"
