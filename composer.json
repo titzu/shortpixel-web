@@ -17,6 +17,15 @@
     "email": "support@shortpixel.com"
   },
 
+  "scripts": {
+    "post-install-cmd": [
+      "bash post-install.sh"
+    ],
+    "post-update-cmd": [
+      "bash post-install.sh"
+    ]
+  },
+
   "authors": [{
     "name": "Simon Duduica",
     "email": "simon@shortpixel.com"
