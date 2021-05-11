@@ -19,7 +19,7 @@
 
   "scripts": {
     "sp-update": [
-      "echo 'aaaaaa'"
+      "bash echo \"aaaaaa\""
     ],
     "post-install-cmd": [
       "@sp-update"
