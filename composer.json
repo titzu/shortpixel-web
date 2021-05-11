@@ -18,11 +18,14 @@
   },
 
   "scripts": {
+    "sp-update": [
+      "echo 'aaaaaa'"
+    ],
     "post-install-cmd": [
-      "bash post-install.sh"
+      "@sp-update"
     ],
     "post-update-cmd": [
-      "bash post-install.sh"
+      "@sp-update"
     ]
   },
 
