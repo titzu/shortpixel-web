@@ -53,6 +53,7 @@ class ShortPixelWeb
         );
         $apiKey = 'r4QknL9jd8pSPxnzuJ3X';
         //die(phpinfo());
+        
 
         $this->handleRequest();
     }
