@@ -266,7 +266,12 @@ class ShortPixelWeb
 
 
     function renderStartPage($messages) {
-        $apiKey = $this->settingsHandler->get("API_KEY");
+        if($this->settings) {
+            $apiKey = $this->settings["apiKey"];
+        } else {
+            $apiKey = $this->settingsHandler->get("API_KEY");
+        }
+
         $this->initJSConstants();
         if( !$apiKey && isset($_SESSION["ShortPixelWebSettings"])) {
             //for interoperability with a main site, for example ShortPixel.com :) - will also pass user home folder.
