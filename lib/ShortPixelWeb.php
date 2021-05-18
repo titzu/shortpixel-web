@@ -24,11 +24,18 @@ class ShortPixelWeb
     private $settingsHandler;
     private $xtpl;
     private $basePath;
+    private $settings;
 
-    function __construct() {
-        $this->xtpl = new XTemplate('main.html', __DIR__ . '/ShortPixelWeb/tpl');
-        $this->settingsHandler = new \ShortPixel\Settings(dirname(__DIR__). '/shortpixel.ini');
-        $this->basePath = str_replace(DIRECTORY_SEPARATOR, '/', dirname(dirname(__DIR__))); // get that damn separator straight on Windows too :))
+    function __construct($settings=false) {
+        if(!$settings) {
+            $this->xtpl = new XTemplate('main.html', __DIR__ . '/ShortPixelWeb/tpl');
+            $this->settingsHandler = new \ShortPixel\Settings(dirname(__DIR__). '/shortpixel.ini');
+            $this->basePath = str_replace(DIRECTORY_SEPARATOR, '/', dirname(dirname(__DIR__))); // get that damn separator straight on Windows too :))
+        } else {
+            $this->xtpl = new XTemplate('main-sp.html', __DIR__ . '/ShortPixelWeb/tpl');
+            $this->settings = $settings;
+        }
+
     }
 
     function bootstrap() {
@@ -38,6 +45,12 @@ class ShortPixelWeb
         //die(phpinfo());
 
         $this->handleRequest();
+    }
+
+    function bootstrapSP() {
+        date_default_timezone_set("UTC");
+        $_GET['folder'] = $this->settings['folder'];
+        return $this->handleRequest();
     }
 
     function handleRequest() {
@@ -61,7 +74,11 @@ class ShortPixelWeb
             }
         }
         elseif(isset($_GET['folder'])) {
-            $this->renderOptimizeNow($_GET);
+            if($this->settings) {
+                return $this->renderOptimizeNow($_GET);
+            } else {
+                $this->renderOptimizeNow($_GET);
+            }
         }
         else {
             $this->renderStartPage(array());
@@ -140,7 +157,12 @@ class ShortPixelWeb
                 $this->setupWrapper(false);
 
                 $bkFld = $this->searchBackupFolder($postDir);
-                $backupFolder = $bkFld['backupPath']; $backupUrl = $bkFld['backupUrl']; $backupDir = $bkFld["backupDir"];
+                $backupFolder = $bkFld['backupPath']; $backupUrl = $bkFld['backupUrl'];
+                if($this->settings) {
+                    $backupDir = '';
+                } else {
+                    $backupDir = $bkFld["backupDir"];
+                }
                 $filesStatus = \ShortPixel\folderInfo($postDir, false, true);
                 //die(var_dump($filesStatus));
             }
@@ -192,7 +214,21 @@ class ShortPixelWeb
                                                 echo "<a class='optimized-view' href='#' data-original='" . $originalUrl . "' data-optimized='" . $optimizedUrl . "' title='Compare images for " . $file . " (original vs. lossy)' style='display: inline;'>";
                                                 echo "<span class='dashicons sp-eye-open' style='cursor:pointer;font-size:1.2em'></span>";
                                                 echo "</a>";
+                                            } else {
+                                                if($this->settings) {
+                                                    $temp = explode('/out/',$postDir);
+
+                                                    //$temp = explode('/',$temp[1]);
+                                                    //$md5 = array_slice($temp, -2, 1);
+                                                    ///var_dump($postDir);die();
+                                                    $file = "https://{$this->settings["archivesDomain"]}/a/{$this->settings["apiKey"]}/{$temp[1]}/{$file}";
+                                                    echo "<a class='optimized-view-single' href='#' data-original='{$file}' data-optimized='{$file}' title='Compare images for " . $file . " (original vs. lossy)' style='display: inline;'>";
+                                                    echo "<span class='dashicons sp-eye-open' style='cursor:pointer;font-size:1.2em'></span>";
+                                                    echo "</a>";
+
+                                                }
                                             }
+
                                         } else {
                                             echo "Bonus processing";
                                         }
@@ -243,13 +279,22 @@ class ShortPixelWeb
         $this->xtpl->assign("current_os_user", $username);
         $this->xtpl->assign("shortpixel_os_path", $this->basePath); // get that damn separator straight on Windows too :))
         $this->xtpl->assign("shortpixel_own_subfolder", basename(dirname(__DIR__)));
-        $this->xtpl->assign("shortpixel_api_key", $this->settingsHandler->get("API_KEY"));
+        if($this->settings) {
+            $this->xtpl->assign("shortpixel_api_key", $this->settings["apiKey"]);
+        } else {
+            $this->xtpl->assign("shortpixel_api_key", $this->settingsHandler->get("API_KEY"));
+        }
         $this->xtpl->assign("shortpixel_unique_id", isset($optData['unique_id']) ? $optData['unique_id'] : '');
     }
 
 
     function renderStartPage($messages) {
-        $apiKey = $this->settingsHandler->get("API_KEY");
+        if($this->settings) {
+            $apiKey = $this->settings["apiKey"];
+        } else {
+            $apiKey = $this->settingsHandler->get("API_KEY");
+        }
+
         $this->initJSConstants();
         if( !$apiKey && isset($_SESSION["ShortPixelWebSettings"])) {
             //for interoperability with a main site, for example ShortPixel.com :) - will also pass user home folder.
@@ -303,6 +348,9 @@ class ShortPixelWeb
             $this->xtpl->assign('succeeded_files', $status->succeeded);
             $this->xtpl->assign('failed_files', $status->failed);
             $this->xtpl->parse('main.glyphicons');
+            if(!$this->settings) {
+                $this->xtpl->parse('main.success.congratulations');
+            }
             $this->xtpl->parse('main.success');
             $this->xtpl->parse('main.success_js');
             $this->xtpl->parse('main.comparer');
@@ -321,13 +369,21 @@ class ShortPixelWeb
             }
             $this->xtpl->parse('main.progress');
         }
-        $this->renderMain();
+        if($this->settings) {
+            return $this->renderMain();
+        } else {
+            $this->renderMain();
+        }
     }
 
     function renderMain() {
         $this->xtpl->assign('web_version', self::VERSION . ' (SDK ' . \ShortPixel\ShortPixel::VERSION . ')');
         $this->xtpl->parse('main');
-        $this->xtpl->out('main');
+        if($this->settings) {
+            return $this->xtpl->text('main');
+        } else {
+            $this->xtpl->out('main');
+        }
     }
 
     function optimizeAction($folder, $uniqueId, $slice) {
@@ -398,8 +454,14 @@ class ShortPixelWeb
 
     function setupWrapper($path) {
         //TODO schimba asta cu composer
-        \ShortPixel\setKey($this->settingsHandler->get("API_KEY"));
-        $opts = $this->settingsHandler->readOptions($path);
+        if($this->settings) {
+            \ShortPixel\setKey($this->settings["apiKey"]);
+            $opts = $this->settings;
+        } else {
+            \ShortPixel\setKey($this->settingsHandler->get("API_KEY"));
+            $opts = $this->settingsHandler->readOptions($path);
+        }
+
         $opts["persist_type"] = "text";
         \ShortPixel\ShortPixel::setOptions($opts);
     }
