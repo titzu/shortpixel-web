@@ -35,7 +35,6 @@ class ShortPixelWeb
             $this->xtpl = new XTemplate('main-sp.html', __DIR__ . '/ShortPixelWeb/tpl');
             $this->settings = $settings;
         }
-
     }
 
     function bootstrap() {
