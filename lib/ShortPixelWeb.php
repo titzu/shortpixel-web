@@ -369,6 +369,10 @@ class ShortPixelWeb
             $this->xtpl->parse('main.progress');
         }
         if($this->settings) {
+            $this->xtpl->assign('archives_domain', $this->settings["archivesDomain"]);
+            $this->xtpl->assign('apiKey', $this->settings["apiKey"]);
+            $this->xtpl->parse('main.progress.bar');
+            $this->xtpl->parse('main.progress');
             return $this->renderMain();
         } else {
             $this->renderMain();

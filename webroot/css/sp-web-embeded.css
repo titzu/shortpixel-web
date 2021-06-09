@@ -679,3 +679,7 @@ button.close{
         width: 900px
     }
 }
+
+div.sp-folder-results {
+    width: 100%;
+}

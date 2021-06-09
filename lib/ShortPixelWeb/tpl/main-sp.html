@@ -1,7 +1,7 @@
 <!-- BEGIN: main -->
-    <link href="css/sp-web-embeded.css" rel="stylesheet">
     <link href="css/sp-file-tree.css" rel="stylesheet">
     <link href="css/twentytwenty.css" rel="stylesheet">
+    <link href="css/sp-web-embeded.css" rel="stylesheet">
     <!-- BEGIN: glyphicons -->
     <!--<link href="css/glyphicons.css" rel="stylesheet">-->
     <!-- END: glyphicons -->
@@ -24,12 +24,60 @@
             <!-- END: comparer -->
         </div>
     </div>
+    <style>
+        #opt_report {
+            position: relative;
+            left: -20%;
+            top: 30px;
+        }
+        .box {
+            box-shadow: none;
+        }
+        .content {
+            padding: 0;
+        }
+        div.sp-folder-results {
+            margin-top: 100px;
+        }
+    </style>
 
     <script type='text/javascript' src='js/jquery-3.1.1.min.js'></script>
     <script type='text/javascript' src='js/jquery.knob.js'></script>
     <script src="js/jquery.event.move.js" type="text/javascript"></script>
     <script src="js/jquery.twentytwenty.js" type="text/javascript"></script>
     <script type='text/javascript' src='js/sp-file-tree.js'></script>
+    <script>
+        //this function should run only when libraru is installed on shortpixel.com
+        $("#optimizing").hide();
+        function updateProgressBar() {
+            $.ajax({
+                url: '//{archives_domain}/get.php', //the script to call to get data
+                data: 'key={apiKey}&id=1042', //you can insert url argumnets here to pass to api.php
+                dataType: 'json', //data format
+                cache: false,
+                success: function (data) //on recieve of reply
+                {
+                    var files_uploaded = parseInt(data.FilesUploaded == null ? 0 : data.FilesUploaded);
+                    var files_optimised = parseInt(data.FilesOptimised == null ? 0 : data.FilesOptimised);
+                    var files_with_errors = parseInt(data.FilesFailed == null ? 0 : data.FilesFailed);
+                    var files_already_optimised = parseInt(data.FilesSame == null ? 0 : data.FilesSame);
+
+                    var progress = files_uploaded > 0 ? Math.floor((files_optimised + files_with_errors + files_already_optimised) / files_uploaded * 100) : 0;
+
+                    $(".progress-left").css("width", progress + "%");
+                    $(".progress-img").css("left", progress + "%");
+
+                    if(data.Status!=8) {
+                        setTimeout(updateProgressBar, 5000);
+                    } else {
+                        $("#bulk-progress").hide();
+                    }
+                }
+            });
+
+        }
+        updateProgressBar();
+    </script>
     <script type='text/javascript' src='js/sp-web.js'></script>
     <script>
         ShortPixel.CURRENT_OS_USER = '{current_os_user}';
